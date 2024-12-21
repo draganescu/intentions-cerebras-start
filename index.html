@@ -67,6 +67,17 @@
         .text-center {
             text-align: center;
         }
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
     </style>
 </head>
 <body>
@@ -156,13 +167,19 @@
                 } else {
                     taskBubble.classList.add('chat-bubble-left');
                 }
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.classList.add('form-check');
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
+                checkbox.classList.add('form-check-input');
                 checkbox.checked = task.completed;
                 checkbox.onclick = () => {
                     tasks.find(t => t.id === task.id).completed = !tasks.find(t => t.id === task.id).completed;
                     renderTasks();
                 };
+                const checkboxLabel = document.createElement('label');
+                checkboxLabel.htmlFor = task.id;
+                checkboxLabel.classList.add('form-check-label');
                 const taskNameContainer = document.createElement('div');
                 taskNameContainer.classList.add('task-name');
                 taskNameContainer.innerHTML = `
@@ -185,7 +202,9 @@
                 };
                 buttonsContainer.appendChild(detailsButton);
                 buttonsContainer.appendChild(deleteButton);
-                taskBubble.appendChild(checkbox);
+                checkboxContainer.appendChild(checkbox);
+                checkboxContainer.appendChild(checkboxLabel);
+                taskBubble.appendChild(checkboxContainer);
                 taskBubble.appendChild(taskNameContainer);
                 taskBubble.appendChild(buttonsContainer);
                 taskListInner.appendChild(taskBubble);
