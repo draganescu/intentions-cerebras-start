@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8eL8Cy6XxYqJEOWSIhR0AmIvruA21yZR6Z18zVv468M1JivzVkZy8+g6dmC/kVVu8VHiY7PdvT0nT2HPw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.ico">
+    <meta name="theme-color" content="#6c757d">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .chat-container {
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-bubble {
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-bubble-right {
+            background-color: #dff0d8;
+        }
+        .chat-bubble-left {
+            background-color: #f9f9f9;
+        }
+        .filter-input-container {
+            padding: 10px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-input-container {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-name {
+            flex-grow: 1;
+        }
+        .show-more-link {
+            color: #0d6efd;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .show-more-link:hover {
+            color: #0b5ed7;
+        }
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="chat-container">
+            <div id="task-list" class="flex-grow-1 mt-3 overflow-auto">
+            </div>
+            <div class="task-input-container">
+                <input type="text" id="task-input" class="form-control me-2" placeholder="Add new task, e.g., 'Buy milk #shopping'">
+                <button id="add-task-btn" class="btn btn-primary">&#8593;</button>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="task-modal" tabindex="-1" aria-labelledby="task-modal-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="task-modal-label">Task Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <input type="text" id="task-name-input" class="form-control">
+                        </div>
+                        <textarea id="task-description" rows="5" class="form-control"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="save-task-details-btn" class="btn btn-primary" data-bs-dismiss="modal">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Help Modal -->
+        <div class="modal fade" id="help-modal" tabindex="-1" aria-labelledby="help-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="help-modal-label">Help</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h6>Adding Tasks:</h6>
+                        <p>Type a task name and add tags by using the '#' symbol, e.g., 'Buy milk #shopping'.</p>
+                        <h6>Filtering Tasks:</h6>
+                        <p>Type '#' followed by a tag name to filter tasks by that tag, e.g., '#shopping'.</p>
+                        <p>Type '/' followed by a keyword to search for tasks containing that keyword, e.g., '/milk'.</p>
+                        <h6>Exporting Tasks:</h6>
+                        <p>Type '@export' to export all tasks to Markdown format and copy to clipboard.</p>
+                        <h6>Viewing Task Details:</h6>
+                        <p>Click the '...' button next to a task to view its details.</p>
+                        <h6>Editing Task Details:</h6>
+                        <p>Modify the task name and description in the task details modal and click 'Save Changes'.</p>
+                        <h6>Deleting Tasks:</h6>
+                        <p>Click the '...' button next to a task and then click the 'Delete' button.</p>
+                        <h6>Showing More Tasks:</h6>
+                        <p>Click the 'Show More' link at the bottom of the task list to display more tasks.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        const taskInput = document.getElementById('task-input');
+        const addTaskBtn = document.getElementById('add-task-btn');
+        const taskList = document.getElementById('task-list');
+        const taskModal = document.getElementById('task-modal');
+        const taskNameInput = document.getElementById('task-name-input');
+        const taskDescriptionElement = document.getElementById('task-description');
+        const saveTaskDetailsBtn = document.getElementById('save-task-details-btn');
+        let filteredTasks = tasks;
+        let displayedTasks = [];
+        let currentTaskId;
+
+        function renderTasks() {
+            const taskListInner = document.createElement('div');
+            taskListInner.innerHTML = '';
+            displayedTasks.forEach((task, index) => {
+                const taskBubble = document.createElement('div');
+                taskBubble.classList.add('chat-bubble');
+                if (task.completed) {
+                    taskBubble.classList.add('chat-bubble-right');
+                } else {
+                    taskBubble.classList.add('chat-bubble-left');
+                }
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = task.completed;
+                checkbox.onclick = () => {
+                    tasks.find(t => t.id === task.id).completed = !tasks.find(t => t.id === task.id).completed;
+                    renderTasks();
+                };
+                const taskNameContainer = document.createElement('div');
+                taskNameContainer.classList.add('task-name');
+                taskNameContainer.innerHTML = `
+                    <span>${task.name.replace(/#(\w+)/g, (match, group) => `<span class="badge bg-secondary">${match}</span>`)}</span>
+                `;
+                const buttonsContainer = document.createElement('div');
+                const detailsButton = document.createElement('button');
+                detailsButton.className = 'btn btn-info me-2';
+                detailsButton.innerHTML = '&#128269;';
+                detailsButton.onclick = () => {
+                    showTaskDetails(task.id);
+                    var myModal = new bootstrap.Modal(taskModal);
+                    myModal.show();
+                };
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '🚮';
+                deleteButton.className = 'btn btn-danger';
+                deleteButton.onclick = () => {
+                    deleteTask(task.id);
+                };
+                buttonsContainer.appendChild(detailsButton);
+                buttonsContainer.appendChild(deleteButton);
+                taskBubble.appendChild(checkbox);
+                taskBubble.appendChild(taskNameContainer);
+                taskBubble.appendChild(buttonsContainer);
+                taskListInner.appendChild(taskBubble);
+            });
+            if (filteredTasks.length > displayedTasks.length) {
+                const showMoreLinkContainer = document.createElement('div');
+                showMoreLinkContainer.style.padding = "10px 0";
+                const showMoreLink = document.createElement('div');
+                showMoreLink.className = 'text-center';
+                const link = document.createElement('span');
+                link.className = 'show-more-link';
+                link.textContent = 'Show More';
+                link.onclick = () => {
+                    const tasksToDisplay = filteredTasks.slice(0, displayedTasks.length + 3);
+                    displayedTasks = tasksToDisplay;
+                    renderTasks();
+                };
+                showMoreLink.appendChild(link);
+                showMoreLinkContainer.appendChild(showMoreLink);
+                taskListInner.appendChild(showMoreLinkContainer);
+            }
+            taskList.innerHTML = '';
+            taskList.appendChild(taskListInner);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            filteredTasks = tasks;
+            displayedTasks = filteredTasks.slice(0, 3);
+            renderTasks();
+        }
+
+        function showTaskDetails(id) {
+            currentTaskId = id;
+            const task = tasks.find(task => task.id === id);
+            taskNameInput.value = task.name;
+            taskDescriptionElement.value = task.description || '';
+        }
+
+        function filterTasksByTags(tags) {
+            return tasks.filter(task => tags.every(tag => task.tags.includes(tag)));
+        }
+
+        function filterTasksBySearchKeyword(keyword) {
+            return tasks.filter(task => task.name.toLowerCase().includes(keyword.toLowerCase()));
+        }
+
+        function stripHtmlTags(text) {
+            return text.replace(/<[^>]*>/g, '');
+        }
+
+        function groupTasksByTags() {
+            const groupedTasks = {};
+            tasks.forEach(task => {
+                const tags = task.tags.sort().join(',');
+                if (!groupedTasks[tags]) {
+                    groupedTasks[tags] = [];
+                }
+                groupedTasks[tags].push(task);
+            });
+            return groupedTasks;
+        }
+
+        function exportToMarkdown() {
+            const groupedTasks = groupTasksByTags();
+            let markdownText = '# Tasks\n\n';
+            for (const tags in groupedTasks) {
+                const taskList = groupedTasks[tags];
+                const tagName = tags ? `#${tags.replace(/,/g, ', #')}` : 'Uncategorized';
+                markdownText += `## ${tagName}\n`;
+                taskList.forEach(task => {
+                    const markdownNote = task.description ? `\n[^1]: ${task.description}` : '';
+                    markdownText += `- [${task.completed ? 'x' : ' '}] ${stripHtmlTags(task.name.replace(/#(\w+)/g, (match, group) => `#${group}`))}${markdownNote}\n`;
+                });
+                markdownText += '\n';
+            }
+            navigator.clipboard.writeText(markdownText);
+            taskInput.value = '';
+        }
+
+        taskInput.addEventListener('input', () => {
+            const inputValue = taskInput.value.trim();
+            if (inputValue === '@help') {
+                var myModal = new bootstrap.Modal(document.getElementById('help-modal'));
+                myModal.show();
+                taskInput.value = '';
+            } else if (inputValue === '@export') {
+                exportToMarkdown();
+            } else if (/^#(\w+)(,\s*#(\w+))*$/.test(inputValue)) {
+                const inputTags = inputValue.split(',').map(tag => tag.trim().slice(1));
+                filteredTasks = filterTasksByTags(inputTags);
+            } else if (inputValue && inputValue.startsWith('/')) {
+                const searchKeyword = inputValue.slice(1).toLowerCase();
+                filteredTasks = filterTasksBySearchKeyword(searchKeyword);
+            } else {
+                filteredTasks = tasks;
+            }
+            displayedTasks = filteredTasks.slice(0, 3);
+            renderTasks();
+        });
+
+        addTaskBtn.addEventListener('click', () => {
+            const taskName = taskInput.value.trim();
+            if (taskName) {
+                const tags = taskName.match(/#(\w+)/g) || [];
+                const task = {
+                    name: taskName,
+                    completed: false,
+                    id: Math.random().toString(36).substr(2, 9),
+                    tags: tags.map(tag => tag.slice(1)),
+                    description: ''
+                };
+                tasks.unshift(task);
+                filteredTasks = tasks;
+                displayedTasks = filteredTasks.slice(0, 3);
+                taskInput.value = '';
+                renderTasks();
+            }
+        });
+
+        taskInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                addTaskBtn.click();
+            }
+        });
+
+        saveTaskDetailsBtn.addEventListener('click', () => {
+            const task = tasks.find(task => task.id === currentTaskId);
+            task.name = taskNameInput.value;
+            task.description = taskDescriptionElement.value;
+            renderTasks();
+        });
+
+        displayedTasks = tasks.slice(0, 3);
+        renderTasks();
+    </script>
+</body>
+</html>
